@@ -1,6 +1,7 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
+const controllers = require("../controllers/maincontrollers")
 require("dotenv").config();
 
 db=[
@@ -26,8 +27,8 @@ db=[
 function authenticate_token(req,res,next){    
     const cookies= req.cookies;
     if (cookies && cookies.token){
-        
         // token found
+        // console.log(process.env.SECRET_KEY)
         try{
             const payload=jwt.verify(cookies.token,process.env.SECRET_KEY);
 
@@ -70,23 +71,47 @@ function isUser(req,res,next){
     }
 }
 
-function generate_jwt(user){
-    // jwt payload
-    data={
-        uuid : user.uuid,
-        email : user.email,
-        name : user.name,
-        role : user.role
-    };  
-    // console.log(data)
-    return jwt.sign({data},process.env.SECRET_KEY,{expiresIn:"1d"});
+//sanitise a query
+function sanitise(query){
+    wrong_characters=["\'","\"","\`","--","having","where","="," ","(",")",",",];
+    
+    wrong_characters.forEach((val) => {
+        if (query.includes(val)){
+            return false;
+        } 
+    });
+
+    return true;
 }
+
+//sql injection sanition
+function sanitiseEmail(req,res,next){
+    req.body.email=req.body.email.trim().toLowerCase();
+    parts=req.body.email.split("@")
+    let valid=true;
+    if (parts.length==2){
+        valid=sanitise(parts[1]);
+    }
+    else{
+        valid=false;
+    }
+
+    if (valid){
+        next();
+    }
+    else{
+        res.send("Wrong input details, can't login")
+    }
+}
+
+
+
 
 
 // login page route
 router.get("/",authenticate_token,(req,res)=>{
     if (req.user){
-            console.log(req.user)
+            // console.log(req.user)
         if (req.user.role==="admin"){ 
             return res.redirect("/admin/dashboard");
         }
@@ -98,35 +123,53 @@ router.get("/",authenticate_token,(req,res)=>{
 });
 
 // login request 
-router.post("/login",(req,res)=>{
-    // console.log(req.body) ;
-
-    //////////////////////////////////////////////////////////////////////////hash to compair incoming password
-    for(let i of db){  ///////////////////////////////////////use the real db\
-        console.log(i.email,"\t",req.body.email)
-        if (i.email===req.body.email){
-            user=i;
-            
-            break;
-        }
-    }
-
-    console.log(user)
-    const token=generate_jwt(user);
-    res.cookie("token",token,{httpOnly:true});
-    res.redirect("/");
+router.post("/login",sanitiseEmail,(req,res)=>{
+    controllers.logging(req,res);
 }); 
 
+// common book catalog route
+router.get("/books",authenticate_token,authorize_user,(req,res)=>{
+    controllers.getBookCatalog(req,res);
+});
+
+router.get("/books/:buid",authenticate_token,authorize_user,(req,res)=>{
+    const parseid=parseInt(req.params.buid)
+    if(isNaN(parseid)){
+        return res.send("Incorrect route!")
+    }
+    controllers.getBookPage(req,res,req.params.buid);
+});
 
 
 
+//admin dashboard route
+router.get("/admin/dashboard",authenticate_token,authorize_user,isAdmin,(req,res)=>{
+    controllers.getAdminDashData(req,res);
+});
+
+//admin edit book route
+router.get("/admin/editbook/:buid",authenticate_token,authorize_user,isAdmin,(req,res)=>{
+    const parseid=parseInt(req.params.buid)
+    if(isNaN(parseid)){
+        return res.send("Incorrect route!")
+    }
+    controllers.editBook(req,res,parseid);
+});
+
+// admin edit book save changes route
+router.post("/admin/editbook/:buid",authenticate_token,authorize_user,isAdmin,(req,res)=>{
+    const parseid=parseInt(req.params.buid)
+    if(isNaN(parseid)){
+        return res.send("Incorrect route!")
+    }
+    controllers.saveBookEditChanges(req,res,parseid);
+})
+
+// user dashboard route //////////////////////////////////////////////////
 router.get("/user/dashboard",authenticate_token,authorize_user,isUser,(req,res)=>{
     res.send("Welcome to dashboard");
-})
+});
 
-router.get("/admin/dashboard",authenticate_token,authorize_user,isAdmin,(req,res)=>{
-    res.send("Welcome to dashboard");
-})
 
 
 module.exports = router;
