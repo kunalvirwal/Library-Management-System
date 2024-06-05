@@ -72,16 +72,13 @@
                     <a class="nav-link" href="#"><i class="fas fa-circle-user fa-fw me-3"></i><span>Account</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/pending"><i class="fas fa-right-to-bracket fa-fw me-3"></i><span>Book Requests</span></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/cvt_admin"><i class="fas fa-user-lock fa-fw me-3"></i><span>Admin Requests</span></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fas fa-users fa-fw me-3"></i><span>Users</span></a>
+                    <a class="nav-link" href="/pending"><i class="fas fa-right-to-bracket fa-fw me-3"></i><span>Pending Requests</span></a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#"><i class="fas fa-money-bill fa-fw me-3"></i><span>Fines</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/cvt_admin"><i class="fas fa-user-lock fa-fw me-3"></i><span>Request Admin Status</span></a>
                 </li>
                 </ul>
             </div>
@@ -111,53 +108,27 @@
                     </a>
 
                     <a href="/pending" class="list-group-item list-group-item-action py-2 ripple">
-                    <i class="fas fa-right-to-bracket fa-fw me-3"></i><span>Book Requests</span>
+                    <i class="fas fa-right-to-bracket fa-fw me-3"></i><span>Pending Requests</span>
                     </a>
 
-                    <a href="/cvt_admin" class="list-group-item list-group-item-action py-2 ripple">
-                    <i class="fas fa-user-lock fa-fw me-3"></i><span>Admin Requests</span>
-                    </a>
-
-                    <a href="#" class="list-group-item list-group-item-action py-2 ripple">
-                    <i class="fas fa-users fa-fw me-3"></i><span>Users</span>
-                    </a>
                     <a href="#" class="list-group-item list-group-item-action py-2 ripple">
                     <i class="fas fa-money-bill fa-fw me-3"></i><span>Fines</span>
                     </a>
+
+                    <a href="/cvt_admin" class="list-group-item list-group-item-action py-2 ripple">
+                    <i class="fas fa-user-lock fa-fw me-3"></i><span>Request Admin Status</span>
+                    </a>
+
                 </div>
             </div>
         </nav>
         <!-- sidebar end -->
-        <div class="d-flex flex-column  bigboxer " >
-            <div class="fw-bolder p-2 " style="font-family: Arial, roboto , monospace; font-size:2.5rem; text-align:center;">Welcome <%= name %>!  </div>
-            <div class="d-flex flex-row flex-wrap justify-content-evenly my-2 boxer"  >
-                <div class="m-2 boxes" >
-                    <span><%= no_of_books %></span>
-                    <span>Total books</span>
-                </div>
-                <div class="m-2 boxes" >
-                    <span><%= no_of_users  %></span>
-                    <span>Total Users</span>
-                </div>
-                <div class="m-2 boxes" >
-                    <span><%= checked_out %></span>
-                    <span>Books Checked out</span>
-                </div>
-
-                <div class="m-2 boxes" >
-                    <span><%= pending_requests %></span>
-                    <span>Pending Requests</span>
-                </div>
-                <div class="m-2 boxes" >
-                    <span><%= overdue  %></span>
-                    <span>Books Overdue</span>
-                </div>
-            </div>
-
+        <div class=" d-flex flex-column w-100">
+            <!-- heading -->
+            <div class="fw-bolder p-2 px-3 " style="font-family: Arial, roboto , monospace; font-size:2.5rem; text-align:center;">Welcome <%= name %>!  </div>
+            <!-- sub heading -->
+            <div class="text-muted fs-4 mx-5 p-2 " style="font-family: Arial, roboto , monospace; text-align:left;">Borrowed Books</div>
             <div class="mx-5">
-                <!-- sub heading -->
-                <div class="text-muted fs-4 mx-5 p-2 " style="font-family: Arial, roboto , monospace; text-align:left;">Borrowed Books</div>
-
                 <% if (books.length==0) { %>
                     <h3 class="text-muted fw-normal  fs-4">=>You have not checked out any books...</h3>
                 <% } else { %>
@@ -174,20 +145,27 @@
                             <% let s=0; books.forEach((book) => { s++; %>
                                 <tr class=>
                                     <th scope="row"><%= s %></th>
-                                    <td> <a href="/books/<%= book.UUID %>"><%= book.NAME %></a></td>
+                                    <td> <a href="/books/<%= book.BUID %>"><%= book.BUID %> <%= book.NAME %></a></td>
                                     <td> <%= book.CHECKOUT_DATE ? String(book.CHECKOUT_DATE).slice(0, 15) : 'N/A' %></td>
                                     <td>
+                                        <% if (book.req) { %>
+                                            <button type="submit" class="btn btn-warning btn-sm">Pending Checkin    Request</button>
+                                        <% } else { %>
                                         <form action="/checkin" method="POST">
-                                            <button type="submit" class="btn btn-success btn-sm" name="buid" value=<%= book.BUID %>>Checkin</button>
+                                            <button type="submit" class="btn btn-success btn-sm" name="buid" value=<%= book.BUID %>>Request Checkin</button>
                                         </form>
+                                        <% } %>
+
                                     </td>
                                 </tr>
                             <% }) %>
                         </tbody>
                     </table>
-                <% } %>              
+                <% } %>
             </div>
         </div>
+
+        
         
         <!-- <div style="width:100%; height:20vh; background-color:red;"></div> -->
     </div>

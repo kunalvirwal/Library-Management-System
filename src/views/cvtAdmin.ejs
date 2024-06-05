@@ -21,6 +21,34 @@
             text-align: center;
             font-weight: bolder;
         }
+        .desc{
+            max-width:500px;
+            max-height: 5rem;
+            overflow-y:scroll;
+            -webkit-box-shadow: inset 0px -45px 62px -40px rgba(66, 68, 90, 0.5);
+            -moz-box-shadow: inset 0px -45px 62px -40px rgba(66, 68, 90, 0.5);
+            box-shadow: inset 0px -45px 62px -40px rgba(66, 68, 90, 0.256);
+        }
+        /* width */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        /* Track */
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        /* Handle */
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 8px;
+        }
+        
+        /* Handle on hover */
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
     </style>
 </head>
 <body>
@@ -39,7 +67,7 @@
                         <a class="nav-link" href="/"><i class="fas fa-tachometer-alt fa-fw me-3"></i><span>Main Dashboard</span></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="/books"><i class="fas fa-book fa-fw me-3"></i><span>Books</span></a>
+                        <a class="nav-link" href="/books"><i class="fas fa-book fa-fw me-3"></i><span>Books</span></a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#"><i class="fas fa-circle-user fa-fw me-3"></i><span>Account</span></a>
@@ -48,7 +76,7 @@
                         <a class="nav-link" href="/pending"><i class="fas fa-right-to-bracket fa-fw me-3"></i><span>Book Requests</span></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/cvt_admin"><i class="fas fa-user-lock fa-fw me-3"></i><span>Admin Requests</span></a>
+                        <a class="nav-link active" aria-current="page" href=""><i class="fas fa-user-lock fa-fw me-3"></i><span>Admin Requests</span></a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#"><i class="fas fa-users fa-fw me-3"></i><span>Users</span></a>
@@ -75,7 +103,7 @@
                         <a class="nav-link " href="/"><i class="fas fa-tachometer-alt fa-fw me-3"></i><span>Main Dashboard</span></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="/books"><i class="fas fa-book fa-fw me-3"></i><span>Books</span></a>
+                        <a class="nav-link" href="/books"><i class="fas fa-book fa-fw me-3"></i><span>Books</span></a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#"><i class="fas fa-circle-user fa-fw me-3"></i><span>Account</span></a>
@@ -87,18 +115,19 @@
                         <a class="nav-link" href="#"><i class="fas fa-money-bill fa-fw me-3"></i><span>Fines</span></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/cvt_admin"><i class="fas fa-user-lock fa-fw me-3"></i><span>Request Admin Status</span></a>
+                        <a class="nav-link active" aria-current="page" href=""><i class="fas fa-user-lock fa-fw me-3"></i><span>Request Admin Status</span></a>
                     </li>
                     </ul>
                 </div>
             </div>
         </nav>
     <% } %>
+    
     <!--  topbar end -->
      
     <div class="d-flex h-100">
-         <!-- sidebar -->
-         <% if (role==="admin") { %>
+        <!-- sidebar -->
+        <% if (role==="admin") { %>
             <nav id="sidebarMenu" class="d-none d-sm-block sidebar bg-white" style="width:30vw; max-width:280px; height: 100%; border-right: 1px rgba(0, 0, 0, 0.163) solid;">
                 <div class="position-sticky">
                     <div class="list-group list-group-flush " >
@@ -110,7 +139,7 @@
                         <i class="fas fa-tachometer-alt fa-fw me-3"></i><span>Main Dashboard</span>
                         </a>
     
-                        <a href="/books" class="list-group-item list-group-item-action py-2 ripple active" aria-current="true">
+                        <a href="/books" class="list-group-item list-group-item-action py-2 ripple ">
                         <i class="fas fa-book fa-fw me-3"></i><span>Books</span>
                         </a>
     
@@ -122,7 +151,7 @@
                         <i class="fas fa-right-to-bracket fa-fw me-3"></i><span>Book Requests</span>
                         </a>
     
-                        <a href="/cvt_admin" class="list-group-item list-group-item-action py-2 ripple">
+                        <a href="" class="list-group-item list-group-item-action py-2 ripple active" aria-current="true">
                         <i class="fas fa-user-lock fa-fw me-3"></i><span>Admin Requests</span>
                         </a>
     
@@ -148,7 +177,7 @@
                         <i class="fas fa-tachometer-alt fa-fw me-3"></i><span>Main Dashboard</span>
                         </a>
     
-                        <a href="/books" class="list-group-item list-group-item-action py-2 ripple active" aria-current="true">
+                        <a href="/books" class="list-group-item list-group-item-action py-2 ripple ">
                         <i class="fas fa-book fa-fw me-3"></i><span>Books</span>
                         </a>
     
@@ -164,7 +193,7 @@
                         <i class="fas fa-money-bill fa-fw me-3"></i><span>Fines</span>
                         </a>
     
-                        <a href="/cvt_admin" class="list-group-item list-group-item-action py-2 ripple">
+                        <a href="" class="list-group-item list-group-item-action py-2 ripple active" aria-current="true">
                         <i class="fas fa-user-lock fa-fw me-3"></i><span>Request Admin Status</span>
                         </a>
     
@@ -172,62 +201,80 @@
                 </div>
             </nav>
         <% } %>
+        
         <!-- sidebar end -->
 
-
+        
         <div class="d-flex flex-column w-100 " >
             <!-- heading -->
-            <div class="fst-italic fw-bolder px-4 pb-2 pt-5" style="font-family: Arial, roboto , monospace; font-size:2.25rem; text-align:left;">
-                <%= book.NAME  %>
+            <div class="fw-bolder p-2 " style="font-family: Arial, roboto , monospace; font-size:2.5rem; text-align:center;"> Admin Status Request </div>
+            
                 <% if (role==="admin") { %>
-                    <span>
-                        <a href="/admin/editbook/<%= book.BUID  %>" class="fw-normal fs-3 ">
-                            <i class="fa-solid fa-pen-to-square fa-fw ms-2 me-3"></i>
-                        </a>
-                    </span>
-                    <span>
-                        <a href="/admin/deletebook/<%= book.BUID  %>" class="fw-normal fs-3 ">
-                            <i class="fa-solid fa-trash-can fa-fw ms-3 me-3" style="color: #e62d2d;"></i>
-                        </a>
-                    </span>
-                    
-                    
-                <% } %>    
-            </div>
-            <!-- heading end -->
-            
-            <!-- BUID -->
-            <div class="fst-italic px-4 pb-2" style="font-family: Arial, roboto , monospace; font-size:1.5rem; text-align:left;">BUID: <%= book.BUID  %></div>            
-            
-            <!-- description and status -->
-            <div class="d-flex flex-row justify-content-between px-4" >
-                <div class="d-flex flex-row">
-                    <div class="d-flex flex-column">
-                        <div class="text-muted mb-3" style="font-size:1.3rem"><%= book.DESCRIPTION %> 
-                            <div class="fs-3">
-                                <% if (book.CHECKIN===1) { %>
-                                    Status: <span style="color: rgb(12, 224, 12);">Available</span>
-                                <% } else { %>
-                                    Status: <span style="color: red;">Checked Out</span>
-                                <% } %>
-                            </div>                   
-                        </div>
+          
+                    <div class="" style="margin-left:12vw; margin-right:12vw;">
+                        <table class="table table-striped text-aligned-center me-2">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">User Name</th>
+                                    <th scope="col">Phone No.</th>
+                                    <th scope="col">Options</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% let s=0; users.forEach((entry) => { s++; %>
+                                    <tr>
+                                        <th scope="row"><%= s %></th>
+                                        <td> &#40;<%= entry.UUID %>&#41;<%= entry.NAME  %></td>
+                                        <td> <%= entry.PHN_NO %> </td>
+                                        <td class="fs-5 " >
+                                            <form action="/cvt_admin" method="POST">
+                                                <button type="submit" name="approve" value=<%= entry.UUID %> class="btn btn-success">Approve</button>
+                                                <button type="submit" name="deny" value=<%= entry.UUID %> class="btn btn-danger">Deny</button>
+                                            </form>
+                                        </td>                                                                                      
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
                     </div>
-                </div>       
-            </div>
-            <div class="px-4">
-                <form action="/checkout" method="POST">
-                    <button type="submit" class="btn btn-primary" name="buid" value=<%= book.BUID %> <% if (book.CHECKIN===0) { %> disabled <% } %>>Request Checkout</button>
-                </form>
-            </div>   
+                <% } %>
+
+                <% if (role==="user") { %>
+                    <div class="alert alert-warning mx-5" role="alert">
+                        <h4 class="alert-heading">Request for Admin Status</h4>
+                        <p>On this page you can make a request for updating your account to an Admin account and your request will be visisble to all the Admins. An Admin account can modify the book database and does not need to make requests for checkin or checkouts of books moreover it can also approve or deny users' checkin, checkout and Admin status requests. </p>
+                        <hr>
+                        <p class="mb-0">Make an Admin status request.</p>
+                        <% if (applied) { %>
+                            <button type="button" class="btn btn-danger d-inline mt-2">Request Pending...</button>
+                            <form action="/user/refresh" method="POST" class="d-inline  ms-5 ">
+                                <button type="submit"  value=<%= uuid %> name="uuid" value class="btn btn-warning mt-2"  >Refresh</button>
+                            </form>
+                        <% } else { %>
+                            <form action="/cvt_admin" method="POST" class=" mt-2">
+                                <button type="submit" class="btn btn-warning"  >Admin Request</button>
+                            </form>
+                        <% } %>
+                      </div>
+                <% } %>
+            
+
+            
+            
+            
+            
+            
+            
+            
+
         </div>
+        
         
     
     <!-- <div style="width:100%; height:20vh; background-color:red;"></div> -->
     </div>
     <script src="https://kit.fontawesome.com/e77db821fe.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
-    
 </body>
 </html>

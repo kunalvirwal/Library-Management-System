@@ -71,7 +71,7 @@
                         <i class="fas fa-book-open fa-fw me-3"></i><span>SDSLabs Library</span>
                     </span>
                     
-                    <a href="" class="list-group-item list-group-item-action py-2 ripple active" >
+                    <a href="" class="list-group-item list-group-item-action py-2 ripple " >
                     <i class="fas fa-tachometer-alt fa-fw me-3"></i><span>Main Dashboard</span>
                     </a>
 
@@ -107,23 +107,20 @@
             <!-- heading -->
             <div class="fw-bolder fs-2 p-2 " style="font-family: Arial, roboto , monospace; text-align:center;">Edit Book Details</div>
             <!-- edit form -->
-            <form class="mx-5 g-3" action="/admin/editbook/<%= book.BUID %>" method="POST">
+            <form class="mx-5 g-3" action="/admin/addbook/" method="POST">
                 <div class="row mb-3">
                     <label  class="col-md-1 col-form-label text-align-center">Name:</label>
-                    <div class="col-md-6">
-                        <input type="text" class="form-control" value="<%= book.NAME %>" name="name" >
+                    <div class="col-lg-12">
+                        <input type="text" class="form-control"  name="name" >
                     </div>
 
-                    <label  class="col-md-1 col-form-label text-align-center">BUID:</label>
-                    <div class="col-md-2">
-                        <input type="text" class="form-control" name="buid" value=<%= book.BUID %> disabled>
-                    </div>
+                    
 
                 </div>
                 
                 <div class="col-md-12 ">
                     <label for="description" class="form-label mt-3">Description:</label>
-                    <textarea type="text" class="form-control" id="description" name="description" ><%= book.DESCRIPTION  %></textarea>
+                    <textarea type="text" class="form-control" id="description" name="description" ></textarea>
                 </div>
                 
                 <div class="col-12 mt-3">

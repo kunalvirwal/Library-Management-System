@@ -1,6 +1,6 @@
 Steps to run:
-- >npm i
+- > npm install
 - Copy all queries one by one from `./src/configs/mysql_queries` onto your mysql shell.
-- Add all the environment variables in `.env` file
-- >npm run start
+- Add all the environment variables in `sample.env` file and rename it to `.env`. 
+- > npm run start
 - Visit `https://localhost:5000` 
