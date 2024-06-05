@@ -14,7 +14,9 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 
-app.use("",require("./routes/routes"));
+app.use("",require("./routes/commonRoutes"));
+app.use("",require("./routes/adminRoutes"));
+app.use("",require("./routes/userRoutes"));
 
 app.listen(PORT,(error) => {
     if(!error) console.log("Yeah! The server is running!"); 

@@ -1,40 +1,19 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
-const controllers = require("../controllers/maincontrollers")
-const dbConn = require("../configs/database")
-const bcrypt = require('bcrypt');
+const controllers = require("../controllers/commonControllers")
 require("dotenv").config();
 
-db=[
-    {
-        uuid:1,
-        name:"Kunal",
-        email:"k@k",
-        phn_no:1234567890,
-        password:"K",
-        role:"user"
-    },
-    {
-        uuid:2,
-        name:"admin",
-        email:"a@a",
-        phn_no:1234567890,
-        password:"A",
-        role:"admin"
-    }
-];
 
 // decodes the token if present on each request 
 function authenticate_token(req,res,next){    
     const cookies= req.cookies;
     if (cookies && cookies.token){
-        // token found
-        // console.log(process.env.SECRET_KEY)
+
         try{
             const payload=jwt.verify(cookies.token,process.env.SECRET_KEY);   
             req.user=payload.data;
-            // console.log(payload)
+
         } catch(err){
             return res.send("Invalid JWT token");
         }
@@ -57,33 +36,21 @@ function authorize_user(req,res,next){
 }
 
 //create Admin middleware
-async function createAdmin(req,ress,next){
-    let result = await controllers.db_query("SELECT * FROM USER WHERE ROLE=?",["admin"])
+async function createAdmin(req,res,next){
+    let result = await controllers.dbQuery("SELECT * FROM USER WHERE ROLE=?",["admin"])
     if (result.length==0){
         AdminPassword="A"
         AdminPassword= await controllers.saltNhash(AdminPassword)
-        result = await controllers.db_query("INSERT INTO USER VALUES(1,'admin','admin@sdslabs.com','9999999999',?,'admin');",[AdminPassword])
+        result = await controllers.dbQuery("INSERT INTO USER VALUES(1,'admin','admin@sdslabs.com','9999999999',?,'admin');",[AdminPassword])
         console.log("Created an Admin with email:admin@sdslabs.com and password A")
     }
     next()
 
 }
 
-//checks if admin
-function isAdmin(req,res,next){
-    if (req.user.role==="admin") next();
-    else {
-        return res.send("User not authorized, Can't access route!");
-    }
-}
 
-//checks if user
-function isUser(req,res,next){
-    if (req.user.role==="user") next();
-    else {
-        return res.send("User not authorized, Can't access route!");
-    }
-    }
+
+
 
 //sanitise a query
 function sanitise(query){
@@ -121,7 +88,7 @@ function sanitiseEmail(req,res,next){
 // login page route
 router.get("/",createAdmin,authenticate_token,(req,res)=>{
     if (req.user){
-            // console.log(req.user)
+        
         if (req.user.role==="admin"){ 
             return res.redirect("/admin/dashboard");
         }
@@ -189,85 +156,5 @@ router.get("/cvt_admin",authenticate_token,authorize_user,(req,res)=>{
 router.post("/cvt_admin",authenticate_token,authorize_user,(req,res)=>{
     controllers.postCvtAdmin(req,res);
 }) 
-
-// admin convertion route operated by admin///////////////////////////////////  
-
-
-//admin dashboard route
-router.get("/admin/dashboard",authenticate_token,authorize_user,isAdmin,(req,res)=>{
-    controllers.getAdminDashData(req,res);
-});
-
-//admin edit book route
-router.get("/admin/editbook/:buid",authenticate_token,authorize_user,isAdmin,(req,res)=>{
-    const parseid=parseInt(req.params.buid)
-    if(isNaN(parseid)){
-        return res.send("Incorrect route!")
-    }
-    controllers.editBook(req,res,parseid);
-});
-
-// admin edit book save changes route
-router.post("/admin/editbook/:buid",authenticate_token,authorize_user,isAdmin,(req,res)=>{
-    const parseid=parseInt(req.params.buid);
-    if(isNaN(parseid)){
-        return res.send("Incorrect route!");
-    }
-    controllers.saveBookEditChanges(req,res,parseid);
-})
-// create a new book route
-router.get("/admin/addbook",authenticate_token,authorize_user,isAdmin,(req,res)=>{
-    res.render("create_book.ejs");
-})
-
-// admin create book logic route
-router.post("/admin/addbook",authenticate_token,authorize_user,isAdmin,(req,res)=>{
-    controllers.newBook(req,res);
-})
-
-// delete book route
-router.get("/admin/deletebook/:buid",authenticate_token,authorize_user,isAdmin,(req,res)=>{
-    const parseid=parseInt(req.params.buid);
-    if(isNaN(parseid)){
-        return res.send("Incorrect route!");
-    }
-    controllers.deleteBook(req,res,parseid);
-})
-
-// common approve link but operated by admin
-router.get("/admin/approve/:uuid/:buid",authenticate_token,authorize_user,isAdmin,(req,res)=>{
-    const parsebuid=parseInt(req.params.buid);
-    const parseuuid=parseInt(req.params.uuid);
-
-    if(isNaN(parsebuid) || isNaN(parseuuid)){
-        return res.send("Incorrect route!");
-    }
-    controllers.approve(req,res,parseuuid,parsebuid);
-});
-
-// common deny link but operated by admin
-router.get("/admin/deny/:uuid/:buid",authenticate_token,authorize_user,isAdmin,(req,res)=>{
-    const parsebuid=parseInt(req.params.buid);
-    const parseuuid=parseInt(req.params.uuid);
-    
-    if(isNaN(parsebuid) || isNaN(parseuuid)){
-        return res.send("Incorrect route!");
-    }
-    controllers.deny(req,res,parseuuid,parsebuid);
-});
-
-// user dashboard route 
-router.get("/user/dashboard",authenticate_token,authorize_user,isUser,(req,res)=>{
-    controllers.getUserData(req,res);
-});
-
-// user jwt token updation route for role updation 
-router.post("/user/refresh",authenticate_token,authorize_user,isUser,(req,res)=>{
-    controllers.refresh_token(req,res);
-});
-
-
-
-
 
 module.exports = router;

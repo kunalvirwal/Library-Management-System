@@ -287,11 +287,14 @@
                 <!-- pagination tab end -->
 
             </div>
-            <div class="d-flex flex-column align-items-center">
-                <form action="/admin/addbook" method="GET">
-                    <button class="btn btn-success" type="submit">Add New Book</button>
-                </form>
-            </div>
+            <% if (role==="admin") { %>
+                <div class="d-flex flex-column align-items-center">
+                    <form action="/admin/addbook" method="GET">
+                        <button class="btn btn-success" type="submit">Add New Book</button>
+                    </form>
+                </div>
+            <% } %>
+            
             
         </div>
         
