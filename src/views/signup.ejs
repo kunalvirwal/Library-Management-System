@@ -17,7 +17,7 @@
 
     </style>
 </head>
-<body style="padding-top:25vh; background-color:rgb(18, 139, 225);">
+<body style="padding-top:20vh; background-color:rgb(18, 139, 225);">
 
     <!-- login page card -->
 
@@ -43,12 +43,18 @@
                         <label for="floatingInput">Email address</label>
                     </div>
     
-                    <div class="form-floating mb-4">
+                    <div class="form-floating mb-2">
                         <input type="password" class="form-control" id="floatingPassword" name="password" placeholder="Password" required>
                         <label for="floatingPassword">Password</label>
                     </div>
+                    <% if (exists) { %>
+                    <div class=" text-center text-danger mb-2">
+                        <label >User ID with this email already exists!</label>
+                    </div>
+                    <% } %>
                     <div class="d-flex justify-content-center">
-                        <button type="submit" class="btn " style="background-color:rgb(32, 145, 226); color:white;  ">Sign in</button>
+                    
+                        <button type="submit" class="btn " style="background-color:rgb(32, 145, 226); color:white;" >Sign in</button>
                     </div>
                     
                 </form>

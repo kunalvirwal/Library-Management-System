@@ -56,6 +56,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#"><i class="fas fa-money-bill fa-fw me-3"></i><span>Fines</span></a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout"><i class="fas fa-power-off fa-fw me-3"></i><span>Logout</span></a>
+                    </li>
                     </ul>
                 </div>
             </div>
@@ -88,6 +91,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/cvt_admin"><i class="fas fa-user-lock fa-fw me-3"></i><span>Request Admin Status</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout"><i class="fas fa-power-off fa-fw me-3"></i><span>Logout</span></a>
                     </li>
                     </ul>
                 </div>
@@ -132,6 +138,9 @@
                         <a href="#" class="list-group-item list-group-item-action py-2 ripple">
                         <i class="fas fa-money-bill fa-fw me-3"></i><span>Fines</span>
                         </a>
+                        <a href="/logout" class="list-group-item list-group-item-action py-2 ripple">
+                        <i class="fas fa-power-off fa-fw me-3"></i><span>Logout</span>
+                        </a>
                     </div>
                 </div>
             </nav>
@@ -167,7 +176,10 @@
                         <a href="/cvt_admin" class="list-group-item list-group-item-action py-2 ripple">
                         <i class="fas fa-user-lock fa-fw me-3"></i><span>Request Admin Status</span>
                         </a>
-    
+
+                        <a href="/logout" class="list-group-item list-group-item-action py-2 ripple">
+                        <i class="fas fa-power-off fa-fw me-3"></i><span>Logout</span>
+                        </a>
                     </div>
                 </div>
             </nav>
@@ -198,6 +210,11 @@
             
             <!-- BUID -->
             <div class="fst-italic px-4 pb-2" style="font-family: Arial, roboto , monospace; font-size:1.5rem; text-align:left;">BUID: <%= book.BUID  %></div>            
+            <!-- checkout No. -->
+             <% if (role==="admin") { %>
+                <div class="fst-italic px-4 pb-2" style="font-family: Arial, roboto , monospace; font-size:1.25rem; text-align:left;"> <%= book.TOTAL-book.CHECKIN %>/<%= book.TOTAL %> copies checked out. (You can't delete this book till all copies are checked in.)</div>        
+            <% } %>
+              
             
             <!-- description and status -->
             <div class="d-flex flex-row justify-content-between px-4" >
@@ -205,19 +222,19 @@
                     <div class="d-flex flex-column">
                         <div class="text-muted mb-3" style="font-size:1.3rem"><%= book.DESCRIPTION %> 
                             <div class="fs-3">
-                                <% if (book.CHECKIN===1) { %>
+                                <% if (book.CHECKIN>=1) { %>
                                     Status: <span style="color: rgb(12, 224, 12);">Available</span>
                                 <% } else { %>
                                     Status: <span style="color: red;">Checked Out</span>
                                 <% } %>
-                            </div>                   
+                            </div>             
                         </div>
                     </div>
                 </div>       
             </div>
             <div class="px-4">
                 <form action="/checkout" method="POST">
-                    <button type="submit" class="btn btn-primary" name="buid" value=<%= book.BUID %> <% if (book.CHECKIN===0) { %> disabled <% } %>>Request Checkout</button>
+                    <button type="submit" class="btn btn-primary" name="buid" value=<%= book.BUID %> <% if (book.CHECKIN===0 || user_has) { %> disabled <% } %>>Request Checkout</button>
                 </form>
             </div>   
         </div>

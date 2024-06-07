@@ -43,8 +43,11 @@ async function newUser(req,res){
     if (result.length==0){
         result = await dbQuery("INSERT INTO USER VALUES(NULL,?,?,?,?,?)",[name,email,phn_no,password,'user']);
         return logging(req,res)
+    } else{ // This email ID already exists
+        data={exists:true}
+        return res.render("signup.ejs",data)
     }
-    return res.send("This email ID already exists")
+    
     
 }
 
@@ -54,20 +57,25 @@ async function logging(req,res){
     let inp_email=req.body.email.trim().toLowerCase();
     let inp_password=req.body.password.trim();
     let result = await dbQuery(`SELECT * FROM USER WHERE EMAIL=?;`,[inp_email])
-
-    if (result.length ==1 && bcrypt.compare(inp_password,result[0]["PASSWORD"]) ){
+    data={tried:false}
+    if (result.length ==1 && await bcrypt.compare(inp_password,result[0]["PASSWORD"]) ){
         const user=result[0];
         const token=generateJWT(user); // 'user' is the complete user object from db
         res.cookie("token",token,{httpOnly:true});
         res.redirect("/");
-    }
+    } else {
+        data={tried:true}
+        res.render("login.ejs",data)
+    } 
+
+    
     
 }
 
 // book catalog logic
 async function getBookCatalog(req, res){
     let dataset = await dbQuery("SELECT * FROM BOOKS;");
-    const role =req.user.role;
+    const role =req.user.role;  
     const books_per_page=5;
     let no_of_pages=Math.ceil(dataset.length/books_per_page);
     let data,page,start_index;
@@ -94,25 +102,44 @@ async function getBookCatalog(req, res){
 
 // book page logic
 async function getBookPage(req,res,buid){
+    const uuid = req.user.uuid
+    let user_has=false;
+    
     let book = await dbQuery(`SELECT * FROM BOOKS WHERE BUID=?;`,[buid]);
     book=book[0];
+    let result= await dbQuery("SELECT * FROM BORROWING_HISTORY WHERE UUID=? AND BUID=? AND CHECKIN_DATE IS NULL;",[uuid,buid]);
+    let result2= await dbQuery("SELECT * FROM PENDING_REQUESTS WHERE UUID=? AND BUID=? ;",[uuid,buid]);
+
+    if (result.length!=0 || result2.length!=0){
+        user_has=true;
+        
+    }
+    
     role=req.user.role;
-    res.render("bookPage.ejs",{book:book,role:role});
+    res.render("bookPage.ejs",{book:book,role:role,user_has:user_has});
 }
 
 // creates a pending checkin req for users and instantly resolves for admins 
 async function makeCheckoutReq(req,res){
     const buid=parseInt(req.body.buid)
     if (isNaN(buid)){
-        res.send("Invalid BUID parameter recieved")
+        res.status(400).send("Invalid BUID parameter recieved")
     }
     const uuid=req.user.uuid;
     const result =await dbQuery("SELECT * FROM BOOKS WHERE BUID=?",[buid]) 
-    if (result[0]["CHECKIN"]==0 || result.length===0){
+    let result2 =await dbQuery("SELECT * FROM BORROWING_HISTORY WHERE UUID=? AND BUID=? AND CHECKIN_DATE IS NULL",[uuid,buid]) 
+
+    if(result2.length==1){
+        return res.status(403).send("You can not checkout 2 coppies of same book at the same time!")
+    }
+    if (result[0]["CHECKIN"]==0 || result.length==0){
         return res.redirect("/");
     }
-
-    const result2=await dbQuery("INSERT INTO PENDING_REQUESTS VALUES(?,?,0)",[uuid,buid]) // 0 for checkout, 1 for checkin
+    result2=await dbQuery("SELECT * FROM PENDING_REQUESTS WHERE UUID=? AND BUID=?;",[uuid,buid]) // 0 for checkout, 1 for checkin
+    if (result2.length!=0){
+        return res.status(403).send("Request already made!")
+    }
+    result2=await dbQuery("INSERT INTO PENDING_REQUESTS VALUES(?,?,0)",[uuid,buid]) // 0 for checkout, 1 for checkin
 
     if (req.user.role==="admin"){            // admins dont need permission   // request will go to pending list but will be instantly resolved in case of admins
         return res.redirect(`/admin/approve/${uuid}/${buid}`);
@@ -129,20 +156,21 @@ async function makeCheckinReq(req,res){
     if (isNaN(buid)){
         res.send("Invalid BUID parameter recieved")
     }
-
+        
     const result =await dbQuery("SELECT * FROM BORROWING_HISTORY WHERE UUID=? AND BUID=? AND CHECKIN_DATE IS NULL;",[uuid,buid])
     if (result.length!=1){
-        res.send("You can not create a checkin request for someoone else!")
+        res.status(400).send("You can not create a checkin request for a book you didn't borrow!")
     }
-    const result2 =await dbQuery("INSERT INTO PENDING_REQUESTS VALUES(?,?,1);",[uuid,buid])  // 0 for checkout, 1 for checkin
 
+    const result2 =await dbQuery("INSERT INTO PENDING_REQUESTS VALUES(?,?,1);",[uuid,buid])  // 0 for checkout, 1 for checkin
+    
     if (req.user.role==="admin"){            // admins dont need permission // request will go to pending list but will be instantly resolved in case of admins
         return res.redirect(`/admin/approve/${uuid}/${buid}`);
     }
 
     res.redirect("/pending")
 }
-
+ 
 // 
 async function getCvtAdmin(req,res){
     const role = req.user.role;

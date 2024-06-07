@@ -1,55 +1,16 @@
 const express = require("express");
-const jwt = require("jsonwebtoken");
 const router = express.Router();
 const controllers = require("../controllers/adminControllers")
+const middleware = require("../utils/middlewares") 
 require("dotenv").config();
 
-
-// decodes the token if present on each request 
-function authenticate_token(req,res,next){    
-    const cookies= req.cookies;
-    if (cookies && cookies.token){
-
-        try{
-            const payload=jwt.verify(cookies.token,process.env.SECRET_KEY);   
-            req.user=payload.data;
-
-        } catch(err){
-            return res.send("Invalid JWT token");
-        }
-
-    }
-    else{
-        req.user=undefined;
-    }
-    next();
-}
-
-// verifies the jwt payload
-function authorize_user(req,res,next){
-    if (req.user && req.user.uuid && req.user.email && req.user.role && req.user.name){
-        next();
-    }
-    else{
-        return res.send("User not authenticated, Can't access route!");
-    }
-}
-
-//checks if admin
-function isAdmin(req,res,next){
-    if (req.user.role==="admin") next();
-    else {
-        return res.send("User not authorized, Can't access route!");
-    }
-}
-
 //admin dashboard route
-router.get("/admin/dashboard",authenticate_token,authorize_user,isAdmin,(req,res)=>{
+router.get("/admin/dashboard",middleware.authenticate_token,middleware.authorize_user,middleware.isAdmin,(req,res)=>{
     controllers.getAdminDashData(req,res);
 });
 
 //admin edit book route
-router.get("/admin/editbook/:buid",authenticate_token,authorize_user,isAdmin,(req,res)=>{
+router.get("/admin/editbook/:buid",middleware.authenticate_token,middleware.authorize_user,middleware.isAdmin,(req,res)=>{
     const parseid=parseInt(req.params.buid)
     if(isNaN(parseid)){
         return res.send("Incorrect route!")
@@ -58,7 +19,7 @@ router.get("/admin/editbook/:buid",authenticate_token,authorize_user,isAdmin,(re
 });
 
 // admin edit book save changes route
-router.post("/admin/editbook/:buid",authenticate_token,authorize_user,isAdmin,(req,res)=>{
+router.post("/admin/editbook/:buid",middleware.authenticate_token,middleware.authorize_user,middleware.isAdmin,(req,res)=>{
     const parseid=parseInt(req.params.buid);
     if(isNaN(parseid)){
         return res.send("Incorrect route!");
@@ -66,18 +27,19 @@ router.post("/admin/editbook/:buid",authenticate_token,authorize_user,isAdmin,(r
     controllers.saveBookEditChanges(req,res,parseid);
 })
 // create a new book route
-router.get("/admin/addbook",authenticate_token,authorize_user,isAdmin,(req,res)=>{
+router.get("/admin/addbook",middleware.authenticate_token,middleware.authorize_user,middleware.isAdmin,(req,res)=>{
     res.render("createBook.ejs");
 })
 
 // admin create book logic route
-router.post("/admin/addbook",authenticate_token,authorize_user,isAdmin,(req,res)=>{
+router.post("/admin/addbook",middleware.authenticate_token,middleware.authorize_user,middleware.isAdmin,(req,res)=>{
     controllers.newBook(req,res);
 })
 
 // delete book route
-router.get("/admin/deletebook/:buid",authenticate_token,authorize_user,isAdmin,(req,res)=>{
+router.get("/admin/deletebook/:buid",middleware.authenticate_token,middleware.authorize_user,middleware.isAdmin,(req,res)=>{
     const parseid=parseInt(req.params.buid);
+
     if(isNaN(parseid)){
         return res.send("Incorrect route!");
     }
@@ -85,7 +47,7 @@ router.get("/admin/deletebook/:buid",authenticate_token,authorize_user,isAdmin,(
 })
 
 // common approve link but operated by admin
-router.get("/admin/approve/:uuid/:buid",authenticate_token,authorize_user,isAdmin,(req,res)=>{
+router.get("/admin/approve/:uuid/:buid",middleware.authenticate_token,middleware.authorize_user,middleware.isAdmin,(req,res)=>{
     const parsebuid=parseInt(req.params.buid);
     const parseuuid=parseInt(req.params.uuid);
 
@@ -96,7 +58,7 @@ router.get("/admin/approve/:uuid/:buid",authenticate_token,authorize_user,isAdmi
 });
 
 // common deny link but operated by admin
-router.get("/admin/deny/:uuid/:buid",authenticate_token,authorize_user,isAdmin,(req,res)=>{
+router.get("/admin/deny/:uuid/:buid",middleware.authenticate_token,middleware.authorize_user,middleware.isAdmin,(req,res)=>{
     const parsebuid=parseInt(req.params.buid);
     const parseuuid=parseInt(req.params.uuid);
     
