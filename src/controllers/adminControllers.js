@@ -39,7 +39,8 @@ async function getAdminDashData(req,res){
     let pending_requests=0
     result= await dbQuery("SELECT COUNT(*) FROM PENDING_REQUESTS;");
     pending_requests+=Number(result[0]["COUNT(*)"]);
-    result= await dbQuery("SELECT COUNT(*) FROM ADMIN_REQUESTS;");
+
+    result= await dbQuery("SELECT COUNT(*) FROM USER WHERE ADMIN_REQUEST=1;");
     pending_requests+=Number(result[0]["COUNT(*)"]);
     
     const uuid=req.user.uuid
@@ -54,7 +55,8 @@ async function getAdminDashData(req,res){
         no_of_users : no_of_users,
         pending_requests : pending_requests,
         overdue : overdue,
-        books:books
+        books : books,
+        path : req.path
     });
 }
 
@@ -62,28 +64,25 @@ async function getAdminDashData(req,res){
 async function editBook(req,res,buid){
     let book = await dbQuery(`SELECT * FROM BOOKS WHERE BUID=?;`,[buid]);
     book=book[0];
-    res.render("editBookPage.ejs",{book:book});
+    res.render("editBookPage.ejs",{book : book,path : req.path});
 }
 
 // admin edit book logic
 async function saveBookEditChanges(req,res,buid){
     
-    const inp_name=req.body.name;
-    const inp_description=req.body.description;
+    const inp_name=req.body.name.trim();
+    const inp_description=req.body.description.trim();
     const inp_quantity=req.body.qty;
-    if (inp_description.length>2000){
-        return res.send("Can't update details: Description too long!")
+    if (inp_description.length>2000 || inp_name.length>50){
+        return res.status(400).redirect(`/admin/editbook/${buid}`);  // Can't update details: Description too long! ||  // Can't update details: Name too long!
     }
-    if (inp_name.length>50){
-        return res.send("Can't update details: Name too long!")
-    }
-    let result= await dbQuery("SELECT * FROM BOOKS WHERE BUID=?;",[buid])
-    const checked_out=result[0]["TOTAL"]-result[0]["CHECKIN"]
+    let result= await dbQuery("SELECT * FROM BOOKS WHERE BUID=?;",[buid]);
+    const checked_out=result[0]["TOTAL"]-result[0]["CHECKIN"];
     if(inp_quantity<checked_out){
-        return res.status(403).send("Can't decrease quantity under a certain value")
+        return res.status(403).redirect(`/admin/editbook/${buid}`);  // Can't decrease quantity under a certain value
     }
-    let decrease=result[0]["TOTAL"]-inp_quantity
-    let decrease_checkin= result[0]["CHECKIN"]-decrease
+    let decrease=result[0]["TOTAL"]-inp_quantity;
+    let decrease_checkin= result[0]["CHECKIN"]-decrease;
     result= await dbQuery(`UPDATE BOOKS SET NAME=? WHERE BUID=?`,[inp_name,buid]);
     result=await dbQuery(`UPDATE BOOKS SET DESCRIPTION=? WHERE BUID=?`,[inp_description,buid]);
     result=await dbQuery(`UPDATE BOOKS SET TOTAL=? WHERE BUID=?`,[inp_quantity,buid]);
@@ -97,14 +96,16 @@ async function newBook(req,res){
     const inp_description=req.body.description;
     const inp_quantity=req.body.qty;
     if (inp_description.length>2000){
-        return res.send("Can't update details: Description too long!")
+        return res.status(400).redirect(`/admin/addbook`);  // Can't update details: Description too long!
     } else if (inp_description.trim().length==0){
-        return res.send("Can't update details: Description too short!")}
+        return res.status(400).redirect(`/admin/addbook`);  // Can't update details: Description too short!
+    }
     if (inp_name.length>50){
-        return res.send("Can't update details: Name too long!")
+        return res.status(400).redirect(`/admin/addbook`);  // Can't update details: Name too long!
     } else if (inp_name.trim().length==0){
-        return res.send("Can't update details: Name too short!")}
-    
+        return res.status(400).redirect(`/admin/addbook`);  // Can't update details: Name too short!
+    }
+
     let result= await dbQuery(`INSERT INTO BOOKS VALUES(NULL,?,?,?,?)`,[inp_name.trim(),inp_description.trim(),inp_quantity,inp_quantity]);
     
     res.status(200).redirect(`/books`);
@@ -129,11 +130,11 @@ async function approve(req,res,uuid,buid){
     let result2=await dbQuery("SELECT * FROM PENDING_REQUESTS WHERE UUID=? AND BUID=?",[uuid,buid])
     
     if (result.length!=1){
-        return res.status(400).send("Incorrect BUID parameter!");
+        return res.status(400).redirect("/pending")  //  Incorrect BUID parameter!
     }
 
     if(result2.length!=1){
-        return res.status(400).send("Pending Request not found!");
+        return res.status(404).redirect("/pending") //  Pending Request not found!
 
     }
     

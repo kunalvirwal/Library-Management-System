@@ -1,8 +1,6 @@
 const dbConn = require("../configs/database")
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
-
-
 require("dotenv").config();
 
 // function to query database
@@ -35,13 +33,16 @@ function saltNhash(password){
 
 async function newUser(req,res){
     
-    const name = req.body.name;
+    const name = req.body.name.trim();
     const password=await saltNhash(req.body.password)
     const email = req.body.email;
     const phn_no = req.body.phn_no;
+    if (isNaN(parseInt(phn_no)) || parseInt(phn_no)<1000000000 || parseInt(phn_no)>9999999999 || name.length==0 || name.length>50){
+        return res.status(400).redirect("/signup")
+    }
     let result = await dbQuery("SELECT * FROM USER WHERE EMAIL=?",[email]);
     if (result.length==0){
-        result = await dbQuery("INSERT INTO USER VALUES(NULL,?,?,?,?,?)",[name,email,phn_no,password,'user']);
+        result = await dbQuery("INSERT INTO USER VALUES(NULL,?,?,?,?,?,0)",[name,email,phn_no,password,'user']);
         return logging(req,res)
     } else{ // This email ID already exists
         data={exists:true}
@@ -97,7 +98,7 @@ async function getBookCatalog(req, res){
     const end_index=page*books_per_page
     data = dataset.slice(start_index,end_index)
         
-    return res.render("bookCatalog.ejs",{data : data , page : page , books_per_page : books_per_page , no_of_pages : no_of_pages , start_index : start_index , search : search, role : role})
+    return res.render("bookCatalog.ejs",{data : data , page : page , books_per_page : books_per_page , no_of_pages : no_of_pages , start_index : start_index , search : search , role : role , path : req.path})
 }
 
 // book page logic
@@ -116,28 +117,28 @@ async function getBookPage(req,res,buid){
     }
     
     role=req.user.role;
-    res.render("bookPage.ejs",{book:book,role:role,user_has:user_has});
+    res.render("bookPage.ejs",{book:book,role:role,user_has:user_has,path : req.path});
 }
 
 // creates a pending checkin req for users and instantly resolves for admins 
 async function makeCheckoutReq(req,res){
     const buid=parseInt(req.body.buid)
     if (isNaN(buid)){
-        res.status(400).send("Invalid BUID parameter recieved")
+        res.status(400).redirect(`/books`);  //Invalid BUID parameter recieved
     }
     const uuid=req.user.uuid;
-    const result =await dbQuery("SELECT * FROM BOOKS WHERE BUID=?",[buid]) 
-    let result2 =await dbQuery("SELECT * FROM BORROWING_HISTORY WHERE UUID=? AND BUID=? AND CHECKIN_DATE IS NULL",[uuid,buid]) 
+    const result =await dbQuery("SELECT * FROM BOOKS WHERE BUID=?",[buid]); 
+    let result2 =await dbQuery("SELECT * FROM BORROWING_HISTORY WHERE UUID=? AND BUID=? AND CHECKIN_DATE IS NULL",[uuid,buid]); 
 
     if(result2.length==1){
-        return res.status(403).send("You can not checkout 2 coppies of same book at the same time!")
+        return res.status(403).redirect(`/books`);  //You can not checkout 2 coppies of same book at the same time!
     }
     if (result[0]["CHECKIN"]==0 || result.length==0){
         return res.redirect("/");
     }
     result2=await dbQuery("SELECT * FROM PENDING_REQUESTS WHERE UUID=? AND BUID=?;",[uuid,buid]) // 0 for checkout, 1 for checkin
     if (result2.length!=0){
-        return res.status(403).send("Request already made!")
+        return res.status(400).redirect(`/books`);  //Request already made!
     }
     result2=await dbQuery("INSERT INTO PENDING_REQUESTS VALUES(?,?,0)",[uuid,buid]) // 0 for checkout, 1 for checkin
 
@@ -154,12 +155,12 @@ async function makeCheckinReq(req,res){
     const uuid=req.user.uuid;
 
     if (isNaN(buid)){
-        res.send("Invalid BUID parameter recieved")
+        res.status(400).redirect(`/books`);  //Invalid BUID parameter recieved
     }
         
     const result =await dbQuery("SELECT * FROM BORROWING_HISTORY WHERE UUID=? AND BUID=? AND CHECKIN_DATE IS NULL;",[uuid,buid])
     if (result.length!=1){
-        res.status(400).send("You can not create a checkin request for a book you didn't borrow!")
+        res.status(400).redirect(`/books/${buid}`);  //You can not create a checkin request for a book you didn't borrow!
     }
 
     const result2 =await dbQuery("INSERT INTO PENDING_REQUESTS VALUES(?,?,1);",[uuid,buid])  // 0 for checkout, 1 for checkin
@@ -171,17 +172,17 @@ async function makeCheckinReq(req,res){
     res.redirect("/pending")
 }
  
-// 
+// common page for making and resolving admin request of user by admin 
 async function getCvtAdmin(req,res){
     const role = req.user.role;
     const uuid= req.user.uuid;
     let applied= false,users=[];  // is request already made
-    const result = await dbQuery("SELECT * FROM ADMIN_REQUESTS WHERE UUID=?",[uuid])
+    const result = await dbQuery("SELECT * FROM USER WHERE UUID=? AND ADMIN_REQUEST=1;",[uuid])  // CHECKING IF THAT USER HAS APPLIED THE REQUEST
     
     if(role==="admin"){
-        users = await dbQuery("SELECT UUID, USER.NAME, USER.PHN_NO FROM ADMIN_REQUESTS NATURAL JOIN USER;")
+        users = await dbQuery("SELECT UUID, USER.NAME, USER.PHN_NO FROM USER WHERE ADMIN_REQUEST=1;")  //IF USER IS AN ADMIN , BRINGING DATA OF REQUESTERS UUID,NAME,PHNO AS AN ARRAY TO DISPLAY
     }
-    if (result.length==1){
+    if (result.length==1){  // CHECKING IF APPLIED
         applied = true;
     }
      
@@ -189,7 +190,8 @@ async function getCvtAdmin(req,res){
         role : role,
         applied : applied,
         uuid : uuid,
-        users : users
+        users : users,
+        path : req.path
     }
     res.render("cvtAdmin.ejs",data)
 }
@@ -197,30 +199,30 @@ async function getCvtAdmin(req,res){
 async function postCvtAdmin(req,res){
     const role = req.user.role;
     const uuid=req.user.uuid;
-    if(role==="admin"){
+    if(role==="admin"){  // IF ADMIN MAKES A REQUEST
         let target_uuid=req.body.approve ;
         let target_uuid2=req.body.approve || req.body.deny;
-        let result = await dbQuery("SELECT * FROM ADMIN_REQUESTS WHERE UUID=?;",[target_uuid2])
+        let result = await dbQuery("SELECT * FROM USER WHERE UUID=? AND ADMIN_REQUEST=1;",[target_uuid2]);  // CHECKING IF REQUEST IS MADE
         if (result.length!=1){
-            return res.send("You can't promote someone who hasn't made a request!")
+            return res.status(400).redirect(`/cvt_admin`);  // You can't promote someone who hasn't made a request!
         }
         else{
             if (target_uuid){    // if approve undefinded then it must be a deny
-                result = await dbQuery("DELETE FROM ADMIN_REQUESTS WHERE UUID=?;",[target_uuid])
-                result = await dbQuery("UPDATE USER SET ROLE = ? WHERE UUID = ?;",["admin",target_uuid])
+                result = await dbQuery("UPDATE USER SET ADMIN_REQUEST = NULL WHERE UUID = ?;",[target_uuid])  // PUT HIS ADMIN REQUEST VALUE AS NULL
+                result = await dbQuery("UPDATE USER SET ROLE = ? WHERE UUID = ?;",["admin",target_uuid])  // UPDATE ROLE
             }
             else{
                 target_uuid=req.body.deny
-                result = await dbQuery("DELETE FROM ADMIN_REQUESTS WHERE UUID=?;",[target_uuid])
+                result = await dbQuery("UPDATE USER SET ADMIN_REQUEST = 0 WHERE UUID = ?;",[target_uuid])  //IF DENIED THEN SET ADMIN REQUEST TO 0
             }
         }
     }
-    if(role==="user"){
-        let result = await dbQuery("SELECT * FROM ADMIN_REQUESTS WHERE UUID=?",[uuid])
+    if(role==="user"){  // IF USER MAKES A REQUEST
+        let result = await dbQuery("SELECT * FROM USER WHERE UUID=? AND ADMIN_REQUEST = 1;",[uuid])  //CHECKING IF A REQUEST EXISTS
         if (result.length!=0){
-            return res.send("Request already made!")
+            return res.status(400).redirect("/cvt_admin");  // Request already made!
         }
-        result = await dbQuery("INSERT INTO ADMIN_REQUESTS VALUES(?)",[uuid]);
+        result = await dbQuery("UPDATE USER SET ADMIN_REQUEST = 1 WHERE UUID = ?;",[uuid]);  // CHANGES ADIMN REQUEST VALUE TO 1
     }
     
     res.redirect("/")
@@ -257,35 +259,36 @@ async function getPending(req,res){
     data={
         role : role,
         checkins : checkins,
-        checkouts : checkouts
+        checkouts : checkouts,
+        path : req.path
     };
     res.render("pendingReq.ejs",data);
 }
 
-// refreshhes the user's jwt token 
-async function refreshToken(req,res){
-    const uuid=req.user.uuid;
-    let user = await dbQuery("SELECT * FROM USER WHERE UUID=?",[uuid]);
-    let data={
-        UUID : user[0].UUID,
-        EMAIL : user[0].EMAIL, 
-        NAME : user[0].NAME,
-        ROLE : user[0].ROLE
-    }
-    const cookies = req.cookies;
-    if (cookies && cookies.token){
-        const og_token=cookies.token;
-        const new_token=generateJWT(data); // 'user' is the complete user object from db
-        
-        if (og_token != new_token){
-            res.clearCookie("token");
-            res.cookie("token",new_token,{httpOnly:true});
-            return res.redirect("/");
-        }
-        res.redirect("/cvt_admin");
-    }
-    
 
+// common account page 
+async function account(req,res){
+    const uuid = req.user.uuid;
+    let result = await dbQuery(`SELECT * FROM USER WHERE UUID=?;`,[uuid])
+
+    // let user = await dbQuery(`SELECT * FROM USER WHERE UUID=?;`,[uuid])[0];
+    
+    data={...result[0] , path : req.path }
+    res.render("account.ejs",data)
+}
+
+// common account edit logic
+async function editAccount(req,res){
+    const uuid = req.user.uuid;
+    const inp_name = req.body.name.trim();
+    const inp_phn_no = req.body.phn_no;
+    if (isNaN(parseInt(inp_phn_no)) || parseInt(inp_phn_no)<1000000000 || parseInt(inp_phn_no)>9999999999 || inp_name.length>50 || inp_name.length==0 ){
+        return res.status(400).redirect("/signup")
+    }
+    let result = await dbQuery(`UPDATE USER SET NAME=? WHERE UUID=?;`,[inp_name,uuid])
+    result = await dbQuery(`UPDATE USER SET PHN_NO=? WHERE UUID=?;`,[inp_phn_no,uuid])
+    
+    res.status(200).redirect("/logout")
 }
 
 
@@ -300,9 +303,10 @@ module.exports={
     makeCheckoutReq,
     getCvtAdmin,
     postCvtAdmin,
-    refreshToken,
     newUser,
     dbQuery,
     getPending,
-    saltNhash
+    saltNhash,
+    account,
+    editAccount
 };

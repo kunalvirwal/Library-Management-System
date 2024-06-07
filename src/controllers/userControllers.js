@@ -47,6 +47,7 @@ async function getUserData(req,res){
     data={
         name:req.user.name,
         books:result,
+        path : req.path
     };
 
     res.render("userDash.ejs",data);
@@ -71,6 +72,7 @@ async function refreshToken(req,res){
             res.clearCookie("token");
             const new_token=generateJWT(data); // 'user' is the complete user object from db
             res.cookie("token",new_token,{httpOnly:true});
+            let result= await dbQuery("SELECT * FROM PENDING_REQUESTS WHERE UUID=?;",[uuid])
             return res.redirect("/");
         }
         res.redirect("/cvt_admin");

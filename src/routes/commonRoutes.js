@@ -5,7 +5,7 @@ const middleware = require("../utils/middlewares")
 require("dotenv").config();
 
 // login page route
-router.get("/",middleware.createAdmin,middleware.authenticate_token,(req,res)=>{
+router.get("/",middleware.createAdmin,(req,res)=>{
     if (req.user){
         
         if (req.user.role==="admin"){ 
@@ -25,10 +25,10 @@ router.get("/signup",(req,res)=>{
 })
 
 router.post("/newUser",middleware.sanitiseEmail,(req,res)=>{
-    if(sanitise(req.body.name)){
+    if(middleware.sanitise(req.body.name)){
         controllers.newUser(req,res);
     } else  {
-        res.send("Invallid username")
+        res.status(400).redirect("/signup")
     }
     
 })
@@ -39,46 +39,56 @@ router.post("/login",middleware.sanitiseEmail,(req,res)=>{
 }); 
 
 // common book catalog route
-router.get("/books",middleware.authenticate_token,middleware.authorize_user,(req,res)=>{
+router.get("/books",(req,res)=>{
     controllers.getBookCatalog(req,res);
 });
 
+// account details edit page route
+router.get("/account",(req,res)=>{
+    controllers.account(req,res);
+});
+
+// account details edit logic
+router.post("/account",(req,res)=>{
+    controllers.editAccount(req,res);
+});
+
 // common book page route 
-router.get("/books/:buid",middleware.authenticate_token,middleware.authorize_user,(req,res)=>{
+router.get("/books/:buid",(req,res)=>{
     const parseid=parseInt(req.params.buid)
     if(isNaN(parseid)){
-        return res.send("Incorrect route!")
+        return res.status(400).redirect("/books")
     }
     controllers.getBookPage(req,res,req.params.buid);
 });
 
 // common checkin req route
-router.post("/checkin",middleware.authenticate_token,middleware.authorize_user,(req,res)=>{
+router.post("/checkin",(req,res)=>{
     controllers.makeCheckinReq(req,res);
 });
 
 // common checkout req route
-router.post("/checkout",middleware.authenticate_token,middleware.authorize_user,(req,res)=>{
+router.post("/checkout",(req,res)=>{
     controllers.makeCheckoutReq(req,res);
 });
 
 // common route for admin book request resloving and user seeing pending requests
-router.get("/pending",middleware.authenticate_token,middleware.authorize_user,(req,res)=>{
+router.get("/pending",(req,res)=>{
     controllers.getPending(req,res);
 });
 
 // common user's admin convertion request and admin's request display template route
-router.get("/cvt_admin",middleware.authenticate_token,middleware.authorize_user,(req,res)=>{
+router.get("/cvt_admin",(req,res)=>{
     controllers.getCvtAdmin(req,res);
 })
 
 // common admin convertion request creation route
-router.post("/cvt_admin",middleware.authenticate_token,middleware.authorize_user,(req,res)=>{
+router.post("/cvt_admin",(req,res)=>{
     controllers.postCvtAdmin(req,res);
 }) 
 
 //common logout route
-router.get("/logout",middleware.authenticate_token,middleware.authorize_user,(req,res)=>{
+router.get("/logout",(req,res)=>{
     res.clearCookie("token");
     res.redirect("/")
 })
