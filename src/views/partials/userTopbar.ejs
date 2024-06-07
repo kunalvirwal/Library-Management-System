@@ -1,0 +1,52 @@
+<nav class="navbar d-block d-sm-none bg-primary pb-0">
+    <div class="container-fluid px-0">
+        <a class="navbar-brand px-2" href="">SDSLabs Library</a>
+        <button class="navbar-toggler me-2 mb-2" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+            aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse bg-light px-2" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link <% if ( path=="/user/dashboard") { %> active<% } %> "
+                        <% if ( path=="/user/dashboard") { %>aria-current="page" <% } %>
+                        href="<% if ( path!="/user/dashboard") { %> /user/dashboard <% } %>"><i
+                            class="fas fa-tachometer-alt fa-fw me-3"></i><span>Main Dashboard</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <% if ( path=="/books") { %> active<% } %> "
+                        <% if ( path=="/books") { %>aria-current="page" <% } %>
+                        href="<% if ( path!="/books") { %> /books <% } %>"><i
+                            class="fas fa-book fa-fw me-3"></i><span>Books</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <% if ( path=="/account") { %> active<% } %> "
+                        <% if ( path=="/account") { %>aria-current="page" <% } %>
+                        href="<% if ( path!="/account") { %> /account <% } %>"><i
+                            class="fas fa-circle-user fa-fw me-3"></i><span>Account</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link<% if ( path=="/pending") { %> active<% } %> "
+                        <% if ( path=="/pending") { %>aria-current="page" <% } %>
+                        href="<% if ( path!="/pending") { %> /pending <% } %>"><i
+                            class="fas fa-right-to-bracket fa-fw me-3"></i><span>Pending Requests</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="fas fa-money-bill fa-fw me-3"></i><span>Fines</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link<% if ( path=="/cvt_admin") { %> active<% } %> "
+                        <% if ( path=="/cvt_admin") { %>aria-current="page" <% } %>
+                        href="<% if ( path!="/cvt_admin") { %> /cvt_admin <% } %>"><i
+                            class="fas fa-user-lock fa-fw me-3"></i><span>Request Admin Status</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout"><i
+                            class="fas fa-power-off fa-fw me-3"></i><span>Logout</span></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

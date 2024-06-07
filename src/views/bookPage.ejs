@@ -26,20 +26,20 @@
 <body>
     <!-- topbar -->
     <% if (role==="admin") { %>
-        <%- include("./adminTopbar.ejs",{path : path}) %>
+        <%- include("./partials/adminTopbar.ejs",{path : path}) %>
     <% } %>
     <% if (role==="user") { %>
-        <%- include("./userTopbar.ejs",{path : path}) %>
+        <%- include("./partials/userTopbar.ejs",{path : path}) %>
     <% } %>
     <!--  topbar end -->
      
     <div class="d-flex h-100">
          <!-- sidebar -->
         <% if (role==="admin") { %>
-            <%- include("./adminSidebar.ejs",{path : path}) %>
+            <%- include("./partials/adminSidebar.ejs",{path : path}) %>
         <% } %>
         <% if (role==="user") { %>
-            <%- include("./userSidebar.ejs",{path : path}) %>
+            <%- include("./partials/userSidebar.ejs",{path : path}) %>
         <% } %>
         <!-- sidebar end -->
 

@@ -27,10 +27,10 @@
 <body>
     <!-- topbar -->
     <% if (ROLE==="admin") { %>
-        <%- include("./adminTopbar.ejs",{path : path}) %>
+        <%- include("./partials/adminTopbar.ejs",{path : path}) %>
     <% } %>
     <% if (ROLE==="user") { %>
-        <%- include("./userTopbar.ejs",{path : path}) %>
+        <%- include("./partials/userTopbar.ejs",{path : path}) %>
     <% } %>
 
     <!--  topbar end -->
@@ -38,10 +38,10 @@
     <div class="d-flex h-100">
          <!-- sidebar -->
         <% if (ROLE==="admin") { %>
-            <%- include("./adminSidebar.ejs",{path : path}) %>
+            <%- include("./partials/adminSidebar.ejs",{path : path}) %>
         <% } %>
         <% if (ROLE==="user") { %>
-            <%- include("./userSidebar.ejs",{path : path}) %>
+            <%- include("./partials/userSidebar.ejs",{path : path}) %>
         <% } %>
         <!-- sidebar end -->
 

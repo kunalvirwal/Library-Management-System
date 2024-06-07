@@ -1,4 +1,4 @@
-Steps to run:
+***Steps to run:***
 - > npm install
 - Copy all queries one by one from `./src/configs/mysql_queries` onto your mysql shell.
 - Add all the environment variables in `sample.env` file and rename it to `.env`. 
