@@ -119,6 +119,45 @@
                     </table>
                 <% } %>              
             </div>
+
+            <div class="mx-5 my-3">
+                <!-- sub heading -->
+                <p class="d-inline-flex gap-1">
+                    <div class="text-muted fs-4 ms-5 me-3 p-2 d-inline" style="font-family: Arial, roboto , monospace; text-align:left;">Borrowing history</div>
+                    <button class="btn btn-primary " type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                        Show <i class="fa-solid fa-caret-down"></i>
+                    </button>
+                    
+                </p>
+                  <div class="collapse" id="collapseExample">
+                    <div class="card card-body">
+                        <% if (past_books.length==0) { %>
+                            <h3 class="text-muted fw-normal  fs-4">=>You are still to borrow any books...</h3>
+                        <% } else { %>
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Book</th>
+                                        <th scope="col">Checkout Date</th>
+                                        <th scope="col">Checkin Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% let s=0; past_books.forEach((book) => { s++; %>
+                                        <tr class=>
+                                            <th scope="row"><%= s %></th>
+                                            <td> <a href="/books/<%= book.UUID %>"><%= book.NAME %></a></td>
+                                            <td> <%= book.CHECKOUT_DATE ? String(book.CHECKOUT_DATE).slice(0, 15) : 'N/A' %></td>
+                                            <td> <%= book.CHECKIN_DATE ? String(book.CHECKIN_DATE).slice(0, 15) : 'N/A' %></td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        <% } %>
+                    </div>
+                </div>              
+            </div>
         </div>
         
         <!-- <div style="width:100%; height:20vh; background-color:red;"></div> -->

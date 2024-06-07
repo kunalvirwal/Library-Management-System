@@ -44,10 +44,10 @@ async function getAdminDashData(req,res){
     pending_requests+=Number(result[0]["COUNT(*)"]);
     
     const uuid=req.user.uuid
-    let books =await dbQuery("SELECT * FROM BORROWING_HISTORY NATURAL JOIN BOOKS WHERE UUID=? AND CHECKIN_DATE IS NULL;",[uuid])
+    let books =await dbQuery("SELECT * FROM BORROWING_HISTORY NATURAL JOIN BOOKS WHERE UUID=? AND CHECKIN_DATE IS NULL;",[uuid]);
+    let past_books = await dbQuery("SELECT * FROM BORROWING_HISTORY NATURAL JOIN BOOKS WHERE UUID=? AND CHECKIN_DATE IS NOT NULL;",[uuid])
     ///////////////////////////////////////////use borrowing history for implementing overdues
     overdue=1
-
     return res.render("adminDash.ejs",{
         name : name,
         no_of_books : no_of_books,
@@ -56,6 +56,7 @@ async function getAdminDashData(req,res){
         pending_requests : pending_requests,
         overdue : overdue,
         books : books,
+        past_books : past_books.reverse(),
         path : req.path
     });
 }

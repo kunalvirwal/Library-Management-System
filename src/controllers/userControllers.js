@@ -33,6 +33,8 @@ async function getUserData(req,res){
     const uuid=req.user.uuid
     let result =await dbQuery("SELECT * FROM BORROWING_HISTORY NATURAL JOIN BOOKS WHERE UUID=? AND CHECKIN_DATE IS NULL;",[uuid])
     let result2=await dbQuery("SELECT * FROM PENDING_REQUESTS WHERE UUID=? AND TYPE=1",[uuid])
+    let result3 =await dbQuery("SELECT * FROM BORROWING_HISTORY NATURAL JOIN BOOKS WHERE UUID=? AND CHECKIN_DATE IS NOT NULL;",[uuid])
+
     result.forEach(val => {
         val.req=false;
         for (let index = 0; index < result2.length; index++) {
@@ -47,6 +49,7 @@ async function getUserData(req,res){
     data={
         name:req.user.name,
         books:result,
+        past_books : result3.reverse(),
         path : req.path
     };
 
